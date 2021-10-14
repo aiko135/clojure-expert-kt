@@ -2,6 +2,12 @@
 
 Использован сборщик Leiningen
 
+- lein run для выполнения файла
+- lein repl для работы в режиме REPL
+  сборщик leiningen развернет на локальном хосте REPL сервер
+  далее можно работать в терминале а можно в подключить Visual Studio к REPL
+  View->Command Palete... присоединиться к REPL серверу.
+
 Для разработки использована Visual Studio Code с плагином Calva
 
 ## Installation
