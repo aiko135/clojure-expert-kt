@@ -10,6 +10,14 @@
 
 Для разработки использована Visual Studio Code с плагином Calva
 
+Использована библиотека Clara Rules
+Official Docs не полные
+http://www.clara-rules.org/docs/rules/
+API docs
+http://www.clara-rules.org/apidocs/0.19.0/clojure/clara.rules.html
+Хорошие примеры
+https://github.com/cerner/clara-examples
+
 ## Installation
 
 Download from http://example.com/FIXME.
@@ -26,7 +34,47 @@ FIXME: listing of options this app accepts.
 
 ## Examples
 
-...
+ --- Примеры --- 
+
+ (defrecord Weapon [name type])
+ (defquery print-all
+   "Prints all facts"
+   []
+   [?weap <- Weapon (= ?name name)])
+
+;;query вернет результат запроса - список мап - объектов со связанными свойствами
+ (defn apply-query
+   "test"
+   [session]
+   (println "Initial locations that have never been below 0: "
+            (query session print-all))
+   session)
+
+;; Правила - динамическое построение нововых связей в сессии
+ (defrule is-handgun
+   "Test"
+   [Weapon (= ?name name)(= type :handgun)]
+   =>
+   (println (str "Hand gun found! it is: " ?name)))
+
+;; (defn insert-knowledge-base
+   "База знаний"
+   [session]
+   (-> (insert session (->Weapon "Grand Power T12" :shotgun))
+       (insert (->Weapon "Saiga-12 Ижмаш" :handgun))
+       (insert (->Weapon "Застава 7.62" :rifle))
+    ;;insert возвращает измененную сессию, если не использовать -> для последовательного вычисления функций
+    ;;так что результат каждой попадает во 2 параметр следующей функции. Если вернуть просто session до факты не задействуются 
+    ))
+
+ (defn -main
+   "Main entery"
+   [& args]
+   (-> (mk-session 'clojure-expert-kt.core)
+       (insert-knowledge-base)
+       (fire-rules)
+       (apply-query))
+   nil)
 
 ### Bugs
 

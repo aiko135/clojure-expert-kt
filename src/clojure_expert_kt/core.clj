@@ -1,15 +1,34 @@
 (ns clojure-expert-kt.core
   (:gen-class)
-  (:require [clara.rules :refer :all]))
+  (:require [clara.rules :refer :all])
+  (:require [clara.tools.inspect :refer :all]))
+
 ;;Можно использовать строковые константы "high" или механизм ключевых слов keywords :high
+ ;;заголовоки как в C (т. к. прекомпилятор не знает о функциях до их объявления)
+(defn examine-conditions [param])
+(defn insert-knowledge-base [param])
+(defn ask-user [param])
 
 ;;Свойства 
 (defrecord Condition [number descr])
 ;;Правила
 (defrecord Weapon [descr conditions])
-
 ;;Ответы пользователя
 (defrecord Answer [condition iscorrect])
+
+(defrule consult
+  "Производит экспертный анализ по базе знаний"
+  [Weapon (= ?name name) (= ?conditions conditions)] ;;перебор фактов как в прологе с механизмом связывания перменных
+  =>
+  (examine-conditions ?conditions))
+
+(defquery find-answer
+  "Поиск факта ответа с указанным свойством"
+  []
+  [?condition <- Answer (= ?cond condition) (= ?state iscorrect)])
+
+;;в этот момент будет создана сессия. Обязательно объявить все rules и queries перед этим вызовом
+(defsession my-session 'clojure-expert-kt.core)
 
 (defn insert-knowledge-base
   "База знаний"
@@ -19,86 +38,53 @@
       (insert (->Condition 3 "Дробовик"))
       (insert (->Condition 4 "Карабин"))
 
+      (insert (->Answer 2 :true))
+      (insert (->Answer 4 :true))
+
       (insert (->Weapon "Тигр 7.62" '(2 4)))
       (insert (->Weapon "Saiga-12 Ижмаш" '(2 3)))
       (insert (->Weapon "Застава 7.62" '(1 4)))))
 
-(defrule consult
-  "Test"
-  [Weapon (= ?name name) (= ?conditions conditions)] ;;перебор фактов как в прологе с механизмом связывания перменных
-  =>
-  (examine-condition ?conditions))
-
-(defn examine-condition
-  "Проверка свойства в вершине списка"
-  [condition-list]
-  (println (str (first condition-list)))
-  (if (empty? (rest condition-list))
-    true
-    (examine-condition (next condition-list))))
 
 (defn ask-user
   "Спрашивает пользователя о признаке"
   [condition]
-  (println (str condition "? [y/n]"))
+  (println (str condition " ? [y/n]"))
   (= "y" (read-line)))
 
-(defn save-session
-  "сохраняет сессию в статическую переменную"
+(defn print-ses
   [session]
-  (def ^:dynamic MAIN-SESSION session)
+  (println (inspect session))
   session)
+
+(defn examine-conditions
+  "Рекурсиваня проверка списка свойств"
+  [condition-list]
+  ;;(ask-user (first condition-list))
+  (println (str (first condition-list)))
+  (print-ses my-session)
+  ;; (println (query my-session find-answer))
+  (if (empty? (rest condition-list))
+    true
+    (examine-conditions (next condition-list)))) ;;рекурсия
 
 (defn -main
   "Main entery"
   [& args]
-  (-> (mk-session 'clojure-expert-kt.core)
+  
+  (-> my-session
       (insert-knowledge-base)
-      (save-session)
       (fire-rules))
   ;; (println (str (first #{1 2})))
-  nil)
+      nil)
 
-;; --- Примеры --- 
 
-;; (defrecord Weapon [name type])
-;; (defquery print-all
-;;   "Prints all facts"
-;;   []
-;;   [?weap <- Weapon (= ?name name)])
-
-;; ;;query вернет результат запроса - список мап - объектов со связанными свойствами
-;; (defn apply-query
-;;   "test"
-;;   [session]
-;;   (println "Initial locations that have never been below 0: "
-;;            (query session print-all))
-;;   session)
-
-;; Правила - динамическое построение нововых связей в сессии
-;; (defrule is-handgun
-;;   "Test"
-;;   [Weapon (= ?name name)(= type :handgun)]
-;;   =>
-;;   (println (str "Hand gun found! it is: " ?name)))
-
-;; (defn insert-knowledge-base
-;;   "База знаний"
-;;   [session]
-;;   (-> (insert session (->Weapon "Grand Power T12" :shotgun))
-;;       (insert (->Weapon "Saiga-12 Ижмаш" :handgun))
-;;       (insert (->Weapon "Застава 7.62" :rifle))
-;;    ;;insert возвращает измененную сессию, если не использовать -> для последовательного вычисления функций
-;;    ;;так что результат каждой попадает во 2 параметр следующей функции. Если вернуть просто session до факты не задействуются 
-;;       ))
-
-;; (defn -main
-;;   "Main entery"
-;;   [& args]
-;;   (-> (mk-session 'clojure-expert-kt.core)
-;;       (insert-knowledge-base)
-;;       (fire-rules)
-;;       (apply-query))
-;;   nil)
+;; (defn examine-item
+;;   "Проверка текущего предмета со списком свойств"
+;;   [item condition-list]
+;;   (if (examine-conditions condition-list)
+;;       (println (str "Экспертный анализ завершен. Вам подоходит " item))
+;;        nil)
+;; )
 
 
