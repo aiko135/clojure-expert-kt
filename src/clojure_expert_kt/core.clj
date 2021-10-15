@@ -27,7 +27,7 @@
   []
   [?condition <- Answer (= ?cond condition) (= ?state iscorrect)])
 
-;;в этот момент будет создана сессия. Обязательно объявить все rules и queries перед этим вызовом
+;;в этот момент будет создана сессия. Обязательно объявить все rules и queries перед 'nb
 (defsession my-session 'clojure-expert-kt.core)
 
 (defn insert-knowledge-base
@@ -62,11 +62,16 @@
   [condition-list]
   ;;(ask-user (first condition-list))
   (println (str (first condition-list)))
-  (print-ses my-session)
+  ;;(print-ses my-session)
   ;; (println (query my-session find-answer))
   (if (empty? (rest condition-list))
     true
     (examine-conditions (next condition-list)))) ;;рекурсия
+
+(defn update-session
+  [session]
+  (def my-session session)
+  session)
 
 (defn -main
   "Main entery"
@@ -74,9 +79,11 @@
   
   (-> my-session
       (insert-knowledge-base)
-      (fire-rules))
+      (fire-rules)
+      (update-session))
+  (print-ses my-session)
   ;; (println (str (first #{1 2})))
-      nil)
+  nil)
 
 
 ;; (defn examine-item
