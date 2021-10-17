@@ -18,6 +18,16 @@ http://www.clara-rules.org/apidocs/0.19.0/clojure/clara.rules.html
 Хорошие примеры
 https://github.com/cerner/clara-examples
 
+Заметки
+Удобно делать заголовки функций и переменных
+(def session nil)
+потом в эту переменную записывать значения
+
+Так же 
+ВЫЗЫВАТЬ ЗАПРОСЫ (QUERY) ТОЛЬКО ПОСЛЕ fire-rule. 
+Сначала должны сработать все правила - потом можно отправлять запросы 
+Поэтому вызвать Query внутри правил - НЕЛЬЗЯ. Это приводит к некорректной работе. Query вернет пустоту 
+
 ## Installation
 
 Download from http://example.com/FIXME.
