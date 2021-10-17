@@ -23,6 +23,7 @@
   =>
   (examine-item-with-conditions ?name ?conditions))
 
+
 (defquery find-answer-query
   "Поиск факта ответа с указанным свойством"
   []
