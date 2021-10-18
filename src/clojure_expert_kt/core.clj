@@ -88,7 +88,8 @@
   [condition-list session]
   (let [ condition-result
          (examine-condition (first condition-list) session) ]
-    (println (query (get condition-result :session) get-all-answers))
+  ;;  наглядная демонстрация как накапливаются факты Answer в сессии
+  ;;  (println (query (get condition-result :session) get-all-answers)) 
     (if (true? (get condition-result :result))
 
       (if (empty? (rest condition-list))
@@ -120,7 +121,7 @@
             (examine-item-with-conditions session))]
     (if (= :not-found exam-result)
       (println "Желаемый предмет не найден")
-      (println "Желаемый предмет: " (get exam-result :name)))
+      (println "Желаемый предмет: " (get exam-result :?name)))
     ))
 
 ;;----------- TODO сделать отдельную сессию для ответов пользователя
@@ -135,6 +136,9 @@
       (fire-rules) ;;Правил в сессии нет - но вызов все равно обязательно
       (examine))
   nil)
+
+
+;;Старые примеры
 
 ;; (defn examine
 ;;   "Провести экспертный анализ"
