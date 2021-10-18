@@ -1,7 +1,7 @@
 # clojure-expert-kt Improved rule-driven expert system
 
-==== Clojure, Clara-rules, rule-driven code, expert system
-==== Экспертная система на основе логических правил
+## Clojure, Clara-rules, rule-driven code, expert system
+## Экспертная система на основе логических правил
 
 Использован сборщик Leiningen\
 
@@ -25,7 +25,7 @@ https://github.com/cerner/clara-examples
 Удобно делать заголовки функций и переменных\
 (def session nil)\
 потом в эту переменную записывать значения\
-
+\
 Так же \
 ВЫЗЫВАТЬ ЗАПРОСЫ (QUERY) ТОЛЬКО ПОСЛЕ fire-rule. \
 Сначала должны сработать все правила - потом можно отправлять запросы \
