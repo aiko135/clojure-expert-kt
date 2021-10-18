@@ -4,30 +4,41 @@
   (:require [clara.tools.inspect :refer :all]))
 
 ;;Можно использовать строковые константы "high" или механизм ключевых слов keywords :high
- ;;заголовоки как в C (т. к. прекомпилятор не знает о функциях до их объявления)
-(defn examine-conditions [param])
+;;заголовоки как в C (т. к. прекомпилятор не знает о функциях до их объявления)
 (defn insert-knowledge-base [param])
-(defn ask-user [param])
+(defn examine [param])
 (defn examine-item-with-conditions [param1 param2])
+(defn examine-conditions [param])
+(defn ask-user [param])
+(defn save-answer-in-session [param1 param2 param3])
+(defn examine-condition [param1 param2])
 
 ;;Свойства 
 (defrecord Condition [number descr])
 ;;Правила
-(defrecord Weapon [descr conditions])
+(defrecord Weapon [name conditions])
 ;;Ответы пользователя
 (defrecord Answer [condition iscorrect])
 
-(defrule consult-rule
-  "Производит экспертный анализ по базе знаний"
-  [Weapon (= ?name name) (= ?conditions conditions)] ;;перебор фактов как в прологе с механизмом связывания перменных
-  =>
-  (examine-item-with-conditions ?name ?conditions))
+(defquery get-weapons-query
+  "перебор фактов как в прологе с механизмом связывания перменных"
+  []
+  [Weapon (= ?name name) (= ?cond conditions)])
+
+(defquery get-condition-query
+  "Поиск признака по номеру"
+  [?number]
+  [Condition (= ?number number) (= ?descr descr)])
 
 
 (defquery find-answer-query
   "Поиск факта ответа с указанным свойством"
+  [?condition]
+  [Answer(= ?condition condition) (= ?iscorrect iscorrect)])
+
+(defquery get-all-answers
   []
-  [Answer(= ?test condition)])
+  [Answer(= ?condition condition) (= ?iscorrect iscorrect)])
 
 (defn insert-knowledge-base
   "База знаний"
@@ -41,52 +52,111 @@
       (insert (->Weapon "Saiga-12 Ижмаш" '(2 3)))
       (insert (->Weapon "Застава 7.62" '(1 4)))))
 
-
 (defn ask-user
   "Спрашивает пользователя о признаке"
-  [condition]
-  (println (str condition " ? [y/n]"))
+  [condition session]
+  (-> (query session get-condition-query :?number condition)
+      (first)
+      (get :?descr)
+      (str "? [y/n]")
+      (println))
   (= "y" (read-line)))
 
-(defn examine-item-with-conditions
-  "Test"
-  [item cond-list]
-  (let [session (mk-session [find-answer-query] :cache false)]
-    (-> session
-        (insert (->Answer 2 :true))
-        (insert (->Answer 4 :true))
-        (fire-rules)
-        (examine-conditions cond-list)) 
-    ))
+(defn save-answer-in-session
+  "Сохраняет ответ пользователя. Вернет новую сессию с сохраненным ответом"
+  [session condition iscorrect]
+  (-> session
+      (insert (->Answer condition iscorrect))
+      (fire-rules)))
+
+(defn examine-condition
+  "Проверка конкретного свойства"
+  [condtion session]
+  (let [ query-result 
+        (query session find-answer-query :?condition condtion) ]
+    
+    (if (empty? query-result)
+      
+      (let [user-answer (ask-user condtion session)]
+           {:session (save-answer-in-session session condtion user-answer)
+            :result user-answer}
+      )
+   
+      {:session session :result (first query-result)})))
 
 (defn examine-conditions
   "Рекурсиваня проверка списка свойств"
-  [session condition-list]
-  ;;(ask-user (first condition-list))
-  (println (str (first condition-list)))
-  (println (query session find-answer-query))
-  ;;(print-ses my-session)
-  (if (empty? (rest condition-list))
-    true
-    (examine-conditions session (next condition-list)))) ;;рекурсия
+  [condition-list session]
+  (let [ condition-result
+         (examine-condition (first condition-list) session) ]
+  ;;  наглядная демонстрация как накапливаются факты Answer в сессии
+  ;;  (println (query (get condition-result :session) get-all-answers)) 
+    (if (true? (get condition-result :result))
 
+      (if (empty? (rest condition-list))
+        {:session (get condition-result :session) :result true} ;;проверили все свойства до конца
+        (examine-conditions (rest condition-list) (get condition-result :session)))
+      
+      {:session (get condition-result :session) :result false}))) ;;хотябы одно свойство отрицательное
+   
+(defn examine-item-with-conditions
+  "Рекурсивный перебор объектов с признаками"
+  [item-list session]
+  ;; (println (first item-list))
+    (let [ conditions-result
+         (examine-conditions (get (first item-list) :?cond) session) ]
+      (if (true? (get conditions-result :result))
+        
+        (first item-list) ;;нашли походящий
+
+        (if (empty? (rest item-list))
+          :not-found  ;;дошли до конца но так и не нашли подходящий
+          (examine-item-with-conditions (rest item-list) (get conditions-result :session))))))
+
+
+(defn examine
+  "Провести экспертный анализ"
+  [session]
+  (let [exam-result
+        (-> (query session get-weapons-query)
+            (examine-item-with-conditions session))]
+    (if (= :not-found exam-result)
+      (println "Желаемый предмет не найден")
+      (println "Желаемый предмет: " (get exam-result :?name)))
+    ))
+
+;;----------- TODO сделать отдельную сессию для ответов пользователя
 (defn -main
   "Main entery"
   [& args]
-  
-  (-> (mk-session [consult-rule] :cache false)
+  (-> (mk-session [get-weapons-query
+                   get-condition-query
+                   find-answer-query
+                   get-all-answers] :cache false)
       (insert-knowledge-base)
-      (fire-rules))
-  ;; (println (str (first #{1 2})))
+      (fire-rules) ;;Правил в сессии нет - но вызов все равно обязательно
+      (examine))
   nil)
 
 
-;; (defn examine-item
-;;   "Проверка текущего предмета со списком свойств"
-;;   [item condition-list]
-;;   (if (examine-conditions condition-list)
-;;       (println (str "Экспертный анализ завершен. Вам подоходит " item))
-;;        nil)
-;; )
+;;Старые примеры
 
+;; (defn examine
+;;   "Провести экспертный анализ"
+;;   [session]
+;;   (-> (insert session (->Weapon "Test11" '(1 4 5)))
+;;       (fire-rules)
+;;       (query get-weapons-query)
+;;       (println))
+;;   nil)
 
+;; (defn examine-item-with-conditions
+;;   "Рекурсивный перебор объектов с признаками"
+;;   [item-list session]
+;;   (println item-list)
+;;   (let [session (mk-session [find-answer-query] :cache false)]
+;;     (-> session
+;;         (insert (->Answer 2 :true))
+;;         (insert (->Answer 4 :true))
+;;         (fire-rules)
+;;         (examine-conditions cond-list))))

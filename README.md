@@ -1,6 +1,9 @@
-# clojure-expert-kt
+# clojure-expert-kt Improved rule-driven expert system
 
-Использован сборщик Leiningen
+## Clojure, Clara-rules, rule-driven code, expert system
+## Экспертная система на основе логических правил
+
+Использован сборщик Leiningen\
 
 - lein run для выполнения файла
 - lein repl для работы в режиме REPL
@@ -8,15 +11,25 @@
   далее можно работать в терминале а можно в подключить Visual Studio к REPL
   View->Command Palete... присоединиться к REPL серверу.
 
-Для разработки использована Visual Studio Code с плагином Calva
-
-Использована библиотека Clara Rules
-Official Docs не полные
+Для разработки использована Visual Studio Code с плагином Calva\
+\
+Использована библиотека Clara Rules\
+Official Docs не полные\
 http://www.clara-rules.org/docs/rules/
-API docs
+API docs\
 http://www.clara-rules.org/apidocs/0.19.0/clojure/clara.rules.html
-Хорошие примеры
+Хорошие примеры\
 https://github.com/cerner/clara-examples
+\
+Заметки\
+Удобно делать заголовки функций и переменных\
+(def session nil)\
+потом в эту переменную записывать значения\
+\
+Так же \
+ВЫЗЫВАТЬ ЗАПРОСЫ (QUERY) ТОЛЬКО ПОСЛЕ fire-rule. \
+Сначала должны сработать все правила - потом можно отправлять запросы \
+Поэтому вызвать Query внутри правил - НЕЛЬЗЯ. Это приводит к некорректной работе. Query вернет пустоту \
 
 ## Installation
 
@@ -33,10 +46,11 @@ FIXME: explanation
 FIXME: listing of options this app accepts.
 
 ## Examples
-
+```CLOJURE
  --- Примеры --- 
 
  (defrecord Weapon [name type])
+
  (defquery print-all
    "Prints all facts"
    []
@@ -55,9 +69,9 @@ FIXME: listing of options this app accepts.
    "Test"
    [Weapon (= ?name name)(= type :handgun)]
    =>
-   (println (str "Hand gun found! it is: " ?name)))
+   (println (str "Handgun found! it is: " ?name)))
 
-;; (defn insert-knowledge-base
+ (defn insert-knowledge-base
    "База знаний"
    [session]
    (-> (insert session (->Weapon "Grand Power T12" :shotgun))
@@ -75,7 +89,21 @@ FIXME: listing of options this app accepts.
        (fire-rules)
        (apply-query))
    nil)
-
+```
+Кроме того создать сессию можно еще удобнее. Не из всего пакета, а передав правила и запросы вручную\
+```CLOJURE
+(defn -main
+  "Main entery"
+  [& args]
+  (-> (mk-session [get-weapons-query
+                   get-condition-query
+                   find-answer-query
+                   get-all-answers] :cache false)
+      (insert-knowledge-base)
+      (fire-rules)
+      (examine))
+  nil)
+```
 ### Bugs
 
 ...
