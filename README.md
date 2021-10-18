@@ -43,7 +43,7 @@ FIXME: explanation
 FIXME: listing of options this app accepts.
 
 ## Examples
-
+```
  --- Примеры --- 
 
  (defrecord Weapon [name type])
@@ -85,7 +85,7 @@ FIXME: listing of options this app accepts.
        (fire-rules)
        (apply-query))
    nil)
-
+```
 ### Bugs
 
 ...
