@@ -1,4 +1,4 @@
-# clojure-expert-kt - Improved rule-driven expert system
+# clojure-expert-kt Improved rule-driven expert system
 
 ==== Clojure, Clara-rules, rule-driven code, expert system
 ==== Экспертная система на основе логических правил
