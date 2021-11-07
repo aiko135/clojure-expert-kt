@@ -3,7 +3,7 @@
 ## Clojure, Clara-rules, rule-driven code, expert system
 ## Экспертная система на основе логических правил
 
-Использован сборщик Leiningen\
+Для создания, управления и запуска Clojure программы использован сборщик Leiningen\
 
 - lein run для выполнения файла
 - lein repl для работы в режиме REPL
