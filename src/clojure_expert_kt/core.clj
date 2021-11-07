@@ -30,6 +30,7 @@
   [?number]
   [Condition (= ?number number) (= ?descr descr)])
 
+
 (defquery find-answer-query
   "Поиск факта ответа с указанным свойством"
   [?condition]
