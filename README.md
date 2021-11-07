@@ -43,6 +43,11 @@ FIXME: explanation
 
 ## Options
 
+Add to docs 
+1. Функционал описать
+2. Сравнение с Lisp Prolog
+3. Пример экспертной системы
+4. В каких направление можно использовать связку инструментария. 
 FIXME: listing of options this app accepts.
 
 ## Examples
