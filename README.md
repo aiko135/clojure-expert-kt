@@ -11,6 +11,12 @@
   далее можно работать в терминале а можно в подключить Visual Studio к REPL
   View->Command Palete... присоединиться к REPL серверу.
 
+- lein uberjar генерация jar либы
+- указать доступные для вызова методы
+```CLOJURE
+  (:gen-class
+    :methods [#^{:static true} [mainexpert [int] void]])
+```
 Для разработки использована Visual Studio Code с плагином Calva\
 \
 Использована библиотека Clara Rules\

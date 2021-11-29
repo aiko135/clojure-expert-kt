@@ -1,5 +1,6 @@
 (ns clojure-expert-kt.core
-  (:gen-class)
+  (:gen-class
+    :methods [#^{:static true} [testfun [int] void]])
   (:require [clara.rules :refer :all])
   (:require [clara.tools.inspect :refer :all]))
 
@@ -29,7 +30,6 @@
   "Поиск признака по номеру"
   [?number]
   [Condition (= ?number number) (= ?descr descr)])
-
 
 (defquery find-answer-query
   "Поиск факта ответа с указанным свойством"
@@ -126,9 +126,9 @@
     ))
 
 ;;----------- TODO сделать отдельную сессию для ответов пользователя
-(defn -main
+(defn mainexpert
   "Main entery"
-  [& args]
+  [init-code]
   (-> (mk-session [get-weapons-query
                    get-condition-query
                    find-answer-query
@@ -138,6 +138,18 @@
       (examine))
   nil)
 
+(defn -testfun
+  "test"
+  [init-code]
+   (println "Custom function Clojure expert started")
+  nil)
+
+(defn -main
+  "Main"
+  [& args]
+  (println "Clojure expert started")
+  (mainexpert 1)
+  nil)
 
 ;;Старые примеры
 
