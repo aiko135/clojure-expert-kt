@@ -1,6 +1,9 @@
 (ns clojure-expert-kt.core
   (:gen-class
-    :methods [#^{:static true} [testfun [int] void]])
+   :methods [^{:static true} [createsession [] java.lang.Object]
+             ^{:static true} [getnextquestion [java.lang.Object] java.lang.String]
+             ^{:static true} [checkstate [java.lang.Object] java.lang.String]
+             ^{:static true} [answernextquestion [java.lang.Object java.lang.String] nil]])
   (:require [clara.rules :refer :all])
   (:require [clara.tools.inspect :refer :all]))
 
@@ -34,11 +37,11 @@
 (defquery find-answer-query
   "Поиск факта ответа с указанным свойством"
   [?condition]
-  [Answer(= ?condition condition) (= ?iscorrect iscorrect)])
+  [Answer (= ?condition condition) (= ?iscorrect iscorrect)])
 
 (defquery get-all-answers
   []
-  [Answer(= ?condition condition) (= ?iscorrect iscorrect)])
+  [Answer (= ?condition condition) (= ?iscorrect iscorrect)])
 
 (defn insert-knowledge-base
   "База знаний"
@@ -72,23 +75,22 @@
 (defn examine-condition
   "Проверка конкретного свойства"
   [condtion session]
-  (let [ query-result 
-        (query session find-answer-query :?condition condtion) ]
-    
+  (let [query-result
+        (query session find-answer-query :?condition condtion)]
+
     (if (empty? query-result)
-      
+
       (let [user-answer (ask-user condtion session)]
-           {:session (save-answer-in-session session condtion user-answer)
-            :result user-answer}
-      )
-   
+        {:session (save-answer-in-session session condtion user-answer)
+         :result user-answer})
+
       {:session session :result (first query-result)})))
 
 (defn examine-conditions
   "Рекурсиваня проверка списка свойств"
   [condition-list session]
-  (let [ condition-result
-         (examine-condition (first condition-list) session) ]
+  (let [condition-result
+        (examine-condition (first condition-list) session)]
   ;;  наглядная демонстрация как накапливаются факты Answer в сессии
   ;;  (println (query (get condition-result :session) get-all-answers)) 
     (if (true? (get condition-result :result))
@@ -96,79 +98,67 @@
       (if (empty? (rest condition-list))
         {:session (get condition-result :session) :result true} ;;проверили все свойства до конца
         (examine-conditions (rest condition-list) (get condition-result :session)))
-      
+
       {:session (get condition-result :session) :result false}))) ;;хотябы одно свойство отрицательное
-   
+
 (defn examine-item-with-conditions
   "Рекурсивный перебор объектов с признаками"
   [item-list session]
   ;; (println (first item-list))
-    (let [ conditions-result
-         (examine-conditions (get (first item-list) :?cond) session) ]
-      (if (true? (get conditions-result :result))
-        
-        (first item-list) ;;нашли походящий
+  (let [conditions-result
+        (examine-conditions (get (first item-list) :?cond) session)]
+    (if (true? (get conditions-result :result))
 
-        (if (empty? (rest item-list))
-          :not-found  ;;дошли до конца но так и не нашли подходящий
-          (examine-item-with-conditions (rest item-list) (get conditions-result :session))))))
+      (first item-list) ;;нашли походящий
+
+      (if (empty? (rest item-list))
+        :not-found  ;;дошли до конца но так и не нашли подходящий
+        (examine-item-with-conditions (rest item-list) (get conditions-result :session))))))
 
 
 (defn examine
-  "Провести экспертный анализ"
+  "Провести экспертный анализ исходя"
   [session]
   (let [exam-result
         (-> (query session get-weapons-query)
             (examine-item-with-conditions session))]
     (if (= :not-found exam-result)
       (println "Желаемый предмет не найден")
-      (println "Желаемый предмет: " (get exam-result :?name)))
-    ))
+      (println "Желаемый предмет: " (get exam-result :?name)))))
 
-;;----------- TODO сделать отдельную сессию для ответов пользователя
-(defn mainexpert
-  "Main entery"
-  [init-code]
+
+
+(defn gen-session
+  "generate new session"
+  []
   (-> (mk-session [get-weapons-query
                    get-condition-query
                    find-answer-query
                    get-all-answers] :cache false)
       (insert-knowledge-base)
-      (fire-rules) ;;Правил в сессии нет - но вызов все равно обязательно
-      (examine))
-  nil)
+      (fire-rules))) ;;Правил в сессии нет - но вызов все равно обязательно
 
-(defn -testfun
-  "test"
-  [init-code]
-   (println "Custom function Clojure expert started")
-  nil)
+(defn -createsession
+  "creates a new session"
+  []
+  (gen-session))
+
+(defn -checkstate
+  "check current state"
+  [session]
+  "false")
+
+(defn -getnextquestion
+  "ask"
+  [session]
+  "Question???")
+
+(defn -answernextquestion
+  "answer"
+  [session, answer] nil)
 
 (defn -main
   "Main"
   [& args]
   (println "Clojure expert started")
-  (mainexpert 1)
   nil)
-
-;;Старые примеры
-
-;; (defn examine
-;;   "Провести экспертный анализ"
-;;   [session]
-;;   (-> (insert session (->Weapon "Test11" '(1 4 5)))
-;;       (fire-rules)
-;;       (query get-weapons-query)
-;;       (println))
-;;   nil)
-
-;; (defn examine-item-with-conditions
-;;   "Рекурсивный перебор объектов с признаками"
-;;   [item-list session]
-;;   (println item-list)
-;;   (let [session (mk-session [find-answer-query] :cache false)]
-;;     (-> session
-;;         (insert (->Answer 2 :true))
-;;         (insert (->Answer 4 :true))
-;;         (fire-rules)
-;;         (examine-conditions cond-list))))
