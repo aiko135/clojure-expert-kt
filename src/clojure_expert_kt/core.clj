@@ -3,7 +3,7 @@
    :methods [^{:static true} [createsession [] java.lang.Object]
              ^{:static true} [getnextquestion [java.lang.Object] java.lang.String]
              ^{:static true} [checkstate [java.lang.Object] java.lang.String]
-             ^{:static true} [answernextquestion [java.lang.Object java.lang.String] void]])
+             ^{:static true} [answernextquestion [java.lang.Object java.lang.Boolean] java.lang.Object]])
   (:require [clara.rules :refer :all])
   (:require [clara.tools.inspect :refer :all]))
 
@@ -214,16 +214,17 @@
 (defn -checkstate
   "check current state"
   [session]
-  "false")
+  (examine session))
 
 (defn -getnextquestion
   "ask"
   [session]
-  "Question???")
+  (get-current-question session))
 
 (defn -answernextquestion
   "answer"
-  [session, answer] nil)
+  [session, answer]
+  (answer-current-question session answer))
 
 (defn -main
   "Main"
