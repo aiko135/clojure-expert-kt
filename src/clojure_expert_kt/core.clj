@@ -235,11 +235,15 @@
   ;; (->(gen-session)
   ;;    (get-current-question)
   ;;    (println))
-  (-> (gen-session)
-      (answer-current-question false)
-      (answer-current-question true)
-      (answer-current-question true)
-      (examine)
-      (println))
+
+
+  ;; (-> (gen-session)
+  ;;     (answer-current-question false)
+  ;;     (answer-current-question true)
+  ;;     (answer-current-question true)
+  ;;     (examine)
+  ;;     (println))
+  
+
   (println "Clojure expert started")
   nil)
